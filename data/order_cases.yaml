@@ -1,0 +1,58 @@
+# 下单参数校验的数据驱动用例，改 YAML 就能加场景
+- name: 正常下单
+  fee: "5.00"
+  timeout: 30
+  status: 200
+  code: 0
+
+- name: 跑腿费刚好 1 元
+  fee: "1.00"
+  status: 200
+  code: 0
+
+- name: 跑腿费 0.99 元
+  fee: "0.99"
+  status: 400
+  code: 40004
+
+- name: 跑腿费超过 500 元
+  fee: "500.01"
+  status: 400
+  code: 40004
+
+- name: 跑腿费三位小数
+  fee: "5.005"
+  status: 400
+  code: 40002
+
+- name: 跑腿费不是数字
+  fee: "abc"
+  status: 400
+  code: 40002
+
+- name: 超时时间 9 分钟
+  timeout: 9
+  status: 400
+  code: 40004
+
+- name: 超时时间 181 分钟
+  timeout: 181
+  status: 400
+  code: 40004
+
+- name: 标题只有 1 个字
+  patch:
+    title: "取"
+  status: 400
+  code: 40002
+
+- name: 取件地点为空
+  patch:
+    pickup: ""
+  status: 400
+  code: 40002
+
+- name: 余额不够付跑腿费
+  fee: "301.00"
+  status: 409
+  code: 40903

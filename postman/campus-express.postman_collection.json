@@ -1,0 +1,1110 @@
+{
+  "info": {
+    "name": "校园快递代取平台 · 接口测试",
+    "description": "下单-接单-配送-签收-评价主链路，含鉴权、越权、钱包、信用分和存证校验。跑集合前先执行登录请求拿 token。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:9300"
+    },
+    {
+      "key": "student_token",
+      "value": ""
+    },
+    {
+      "key": "courier_token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "order_id",
+      "value": ""
+    },
+    {
+      "key": "cancel_id",
+      "value": ""
+    },
+    {
+      "key": "order_no",
+      "value": ""
+    },
+    {
+      "key": "new_phone",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 健康检查",
+      "item": [
+        {
+          "name": "健康检查",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('服务在线', () => pm.expect(pm.response.json().data.status).to.eql('up'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 账号与鉴权",
+      "item": [
+        {
+          "name": "注册新用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('注册成功', () => pm.response.to.have.status(200));",
+                  "pm.test('返回 token', () => pm.expect(pm.response.json().data.token).to.be.a('string'));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('new_phone', '139' + String(Date.now()).slice(-8));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{new_phone}}\",\n  \"password\": \"Abc12345\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "学生登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('登录成功', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('student_token', pm.response.json().data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800000001\",\n  \"password\": \"Stu@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "骑手登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('登录成功', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('courier_token', pm.response.json().data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800000002\",\n  \"password\": \"Run@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "管理员登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('登录成功', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('admin_token', pm.response.json().data.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"13800000000\",\n  \"password\": \"Admin@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "查询当前用户",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('手机号脱敏', () => pm.expect(pm.response.json().data.phone).to.include('****'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "查询用户资料",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('信用分存在', () => pm.expect(pm.response.json().data.credit_score).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "2"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 下单与订单查询",
+      "item": [
+        {
+          "name": "创建订单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('创建成功', () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('order_id', d.id);",
+                  "pm.collectionVariables.set('order_no', d.order_no);",
+                  "pm.test('初始状态 pending', () => pm.expect(d.status).to.eql('pending'));",
+                  "pm.test('单号 CX 开头', () => pm.expect(d.order_no).to.match(/^CX\\d{14}$/));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"取快递\",\n  \"pickup\": \"菜鸟驿站\",\n  \"dropoff\": \"3栋201\",\n  \"fee\": \"8.50\",\n  \"timeout_minutes\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "我的订单列表",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('至少一条', () => pm.expect(pm.response.json().data.items.length).to.be.above(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "骑手可接订单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('都是待接单', () => {",
+                  "  pm.response.json().data.items.forEach(o => pm.expect(o.status).to.eql('pending'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{courier_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders?scope=available",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "按状态筛选",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders?status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "订单详情",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('单号一致', () => pm.expect(pm.response.json().data.order_no).to.eql(pm.collectionVariables.get('order_no')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "创建待取消订单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('创建成功', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('cancel_id', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"取消测试\",\n  \"pickup\": \"东门\",\n  \"dropoff\": \"5栋\",\n  \"fee\": \"2.00\",\n  \"timeout_minutes\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "取消订单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('取消成功', () => pm.response.to.have.status(200));",
+                  "pm.test('状态 cancelled', () => pm.expect(pm.response.json().data.status).to.eql('cancelled'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{cancel_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{cancel_id}}",
+                "cancel"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 主链路状态流转",
+      "item": [
+        {
+          "name": "骑手接单",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('接单成功', () => pm.response.to.have.status(200));",
+                  "pm.test('状态 taken', () => pm.expect(pm.response.json().data.status).to.eql('taken'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{courier_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/take",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "take"
+              ]
+            }
+          }
+        },
+        {
+          "name": "骑手取件",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('取件成功', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{courier_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/pickup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "pickup"
+              ]
+            }
+          }
+        },
+        {
+          "name": "骑手送达",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('送达成功', () => pm.response.to.have.status(200));",
+                  "pm.test('状态 delivered', () => pm.expect(pm.response.json().data.status).to.eql('delivered'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{courier_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/deliver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "deliver"
+              ]
+            }
+          }
+        },
+        {
+          "name": "学生签收",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('签收成功', () => pm.response.to.have.status(200));",
+                  "pm.test('状态 signed', () => pm.expect(pm.response.json().data.status).to.eql('signed'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/sign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "sign"
+              ]
+            }
+          }
+        },
+        {
+          "name": "学生评价",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('评价成功', () => pm.response.to.have.status(200));",
+                  "pm.test('评分 5', () => pm.expect(pm.response.json().data.review_rating).to.eql(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/review",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "review"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"送得挺快\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 存证校验",
+      "item": [
+        {
+          "name": "订单存证时间线",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('至少 5 条记录', () => pm.expect(pm.response.json().data.length).to.be.at.least(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/timeline",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "timeline"
+              ]
+            }
+          }
+        },
+        {
+          "name": "校验存证哈希",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('校验通过', () => pm.response.to.have.status(200));",
+                  "pm.test('valid true', () => pm.expect(pm.response.json().data.valid).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{order_id}}",
+                "verify"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 钱包与信用分",
+      "item": [
+        {
+          "name": "查询钱包",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallet"
+              ]
+            }
+          }
+        },
+        {
+          "name": "充值 100 元",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('充值成功', () => pm.response.to.have.status(200));",
+                  "pm.test('余额增加', () => pm.expect(pm.response.json().data.wallet).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/recharge",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallet",
+                "recharge"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": \"100.00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "钱包流水",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/flows",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "flows"
+              ]
+            }
+          }
+        },
+        {
+          "name": "信用分与变动记录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('有信用分', () => pm.expect(pm.response.json().data.credit_score).to.be.a('number'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{student_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/credit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "credit"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 管理端",
+      "item": [
+        {
+          "name": "管理端订单列表",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "管理端统计",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('状态码 200', () => pm.response.to.have.status(200));",
+                  "pm.test('用户数 >= 4', () => pm.expect(pm.response.json().data.users).to.be.at.least(4));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "stats"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
