@@ -1,5 +1,7 @@
 # 校园快递代取平台 · 接口与数据测试
 
+![campus-express-api-ci](https://github.com/zhongjiawei-dev/campus-express-test/actions/workflows/ci.yml/badge.svg)
+
 这是我在校期间做的一个测试练习项目：自己写了一个校园快递代取的服务端，然后把下单、接单、配送、签收、评价这条链路从头测了一遍。仓库里既能跑服务，也能直接跑测试。
 
 服务端没有用现成框架，HTTP 用 Python 标准库，数据放在 MariaDB。写它不是为了做个产品，而是为了让测试有真实的接口、真实的状态流转、真实的多表数据可以核对。
