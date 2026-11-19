@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "校园快递代取平台 · 接口测试",
+    "name": "校园快递代取平台 · 接口集合",
     "description": "下单-接单-配送-签收-评价主链路，含鉴权、越权、钱包、信用分和存证校验。跑集合前先执行登录请求拿 token。",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -558,7 +558,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"取消测试\",\n  \"pickup\": \"东门\",\n  \"dropoff\": \"5栋\",\n  \"fee\": \"2.00\",\n  \"timeout_minutes\": 30\n}",
+              "raw": "{\n  \"title\": \"取消订单\",\n  \"pickup\": \"东门\",\n  \"dropoff\": \"5栋\",\n  \"fee\": \"2.00\",\n  \"timeout_minutes\": 30\n}",
               "options": {
                 "raw": {
                   "language": "json"

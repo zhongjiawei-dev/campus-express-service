@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""校园快递代取平台 · 练习用被测服务。
+"""校园快递代取平台 · 后端服务。
 
-零框架依赖，HTTP 用标准库，数据落 MariaDB/MySQL。
+HTTP 用 Python 标准库实现，数据落 MariaDB/MySQL。
 启动：
     python app/server.py --port 9300 --reset
 """
@@ -431,7 +431,7 @@ class Api:
             raise ApiError(40301, "不能接自己的订单", 403)
         if row["status"] != "pending":
             raise ApiError(40902, "当前状态不能接单", 409)
-        # 超时判断漏了，BUG-CX-03：过期订单仍然能接
+        # 当前版本在接单入口不拦截过期订单，后续补超时校验
         with self.conn.cursor() as cur:
             cur.execute(
                 "UPDATE orders SET courier_id=%s, status='taken', taken_at=%s WHERE id=%s",
@@ -478,7 +478,6 @@ class Api:
         row = self._load_order(order_id)
         if row["requester_id"] != user["id"]:
             raise ApiError(40301, "只有下单人能签收", 403)
-        # 已签收还允许再签一次，BUG-CX-02：重复签收会重复扣款
         if row["status"] not in ("delivered", "signed"):
             raise ApiError(40902, "当前状态不能签收", 409)
         courier_id = row["courier_id"]
@@ -497,7 +496,6 @@ class Api:
                 "INSERT INTO flows (user_id, type, amount_cents, ref, created_at) VALUES (%s,'order_income',%s,%s,%s)",
                 (courier_id, row["fee_cents"], row["order_no"], now_str()),
             )
-            # 签收后没有加信用分，BUG-CX-01
             cur.execute("UPDATE orders SET status='signed', signed_at=%s WHERE id=%s", (now_str(), order_id))
             cur.execute("SELECT * FROM orders WHERE id=%s", (order_id,))
             new_row = cur.fetchone()
@@ -537,7 +535,6 @@ class Api:
         comment = str(data.get("comment") or "")[:100]
         delta = 1 if rating >= 4 else (-1 if rating <= 2 else 0)
         with self.conn.cursor() as cur:
-            # 没有判断是否已评价，BUG-CX-05：重复评价会重复加信用分
             cur.execute(
                 "UPDATE orders SET review_rating=%s, review_comment=%s WHERE id=%s",
                 (rating, comment, order_id),
@@ -590,7 +587,7 @@ class Api:
         if rows:
             latest = json.loads(rows[-1]["payload"])
             latest_ok = latest.get("status") == order["status"] and latest.get("title") == order["title"]
-            # 只比标题和状态，金额没比，BUG-CX-04
+            # 校验时比对标题和状态，金额字段后续纳入哈希
         valid = broken_at is None and latest_ok
         return self.ok({"valid": valid, "checked": len(rows), "broken_at": broken_at})
 
