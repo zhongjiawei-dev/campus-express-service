@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园快递代取平台 · 项目预览</title>
+  <style>
+    :root{--ink:#17211c;--muted:#6d7a72;--line:#dfe7e1;--green:#0f5b43;--green-dark:#0a3d2d;--mint:#e5f3ea;--bg:#f2f6f3;--white:#fff;--amber:#b4611b;--amber-bg:#fff2df;--radius:16px}
+    *{box-sizing:border-box}
+    body{margin:0;color:var(--ink);background:var(--bg);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Helvetica Neue",Arial,sans-serif;font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    .wrap{width:min(1180px,calc(100% - 48px));margin:0 auto}
+    header{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(255,255,255,.9);position:sticky;top:0;z-index:20;backdrop-filter:blur(12px)}
+    .brand{display:flex;align-items:center;gap:11px}
+    .mark{width:36px;height:36px;border-radius:10px;background:var(--green);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;letter-spacing:.08em}
+    .brand strong{font-size:15px}.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.16em;margin-top:1px}
+    .nav{display:flex;gap:20px;align-items:center;color:var(--muted);font-size:12px}
+    .nav a:hover{color:var(--green)}
+    .btn{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:#fff;border-radius:9px;padding:10px 16px;font-weight:600;font-size:12px}
+    .btn:hover{background:var(--green-dark)}
+    .hero{padding:64px 0 54px;display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
+    .eyebrow{color:var(--green);font-size:11px;letter-spacing:.13em;text-transform:uppercase;display:flex;align-items:center;gap:9px;margin:0 0 18px}
+    .eyebrow:before{content:"";width:25px;height:2px;background:var(--green);display:block}
+    h1{margin:0;font-size:clamp(36px,4.5vw,54px);line-height:1.15;letter-spacing:-.035em;font-weight:700}
+    h1 em{font-style:normal;color:var(--green)}
+    .lead{max-width:560px;color:#506159;font-size:14px;line-height:1.95;margin:20px 0 26px}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+    .tag{font-size:10px;border:1px solid #d2e0d7;color:#5f7167;background:#fff;border-radius:999px;padding:4px 10px}
+    .stats{display:flex;gap:26px;flex-wrap:wrap;margin-top:30px}
+    .stat strong{display:block;font-size:23px;letter-spacing:-.03em;line-height:1.1}
+    .stat span{font-size:10px;color:var(--muted)}
+    .shot{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 22px 54px rgba(24,50,36,.11)}
+    .shot img{display:block;width:100%;height:auto}
+    .shot .caption{padding:11px 14px;color:#8a978f;font-size:10px;border-top:1px solid #edf2ee;display:flex;justify-content:space-between}
+    .section{padding:24px 0 52px}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .kicker{color:#87958c;font-size:10px;letter-spacing:.13em;text-transform:uppercase;margin:0 0 4px}
+    h2{margin:0;font-size:25px;letter-spacing:-.02em}
+    .section-head p{margin:0;color:var(--muted);font-size:11px}
+    .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+    .step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+    .step b{display:block;color:var(--green);font-size:11px;letter-spacing:.06em}
+    .step strong{display:block;font-size:14px;margin-top:5px}
+    .step span{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+    .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .gallery figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+    .gallery img{display:block;width:100%;height:auto;border-bottom:1px solid #edf2ee}
+    .gallery figcaption{padding:9px 12px;color:#7f8f86;font-size:10px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+    .card h3{margin:0 0 8px;font-size:15px}
+    .card p{margin:0;color:var(--muted);font-size:11px;line-height:1.85}
+    .card code{font-family:"SFMono-Regular",Consolas,monospace;font-size:10px;color:#2d5943;background:var(--mint);padding:2px 5px;border-radius:4px}
+    .run{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+    pre{margin:0;background:#102b20;color:#dcece2;border-radius:13px;padding:18px 20px;overflow:auto;font-size:11px;line-height:1.9;font-family:"SFMono-Regular",Consolas,monospace}
+    pre .c{color:#8ab49a}
+    .note{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px}
+    .note h3{margin:0 0 8px;font-size:14px}.note p{margin:0;color:var(--muted);font-size:11px;line-height:1.9}
+    footer{border-top:1px solid var(--line);padding:24px 0 38px;color:#8b9a91;font-size:10px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    footer a{color:var(--green)}
+    @media(max-width:900px){.hero{grid-template-columns:1fr;gap:28px;padding-top:40px}.gallery,.cards,.run{grid-template-columns:1fr}.flow{grid-template-columns:repeat(2,1fr)}.nav{display:none}}
+    @media(max-width:520px){.wrap{width:calc(100% - 32px)}.stats{gap:18px}.flow{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+      <a class="brand" href="./">
+        <span class="mark">CX</span>
+        <span><strong>校园快递代取</strong><small>CAMPUS EXPRESS</small></span>
+      </a>
+      <nav class="nav">
+        <a href="#screens">页面</a>
+        <a href="#flow">流程</a>
+        <a href="#run">运行</a>
+        <a class="btn" href="https://github.com/zhongjiawei-dev/campus-express-service">GitHub 仓库</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">校园服务系统 · 项目预览</p>
+        <h1>把取快递这件事，<br>交给<em>顺路的人</em>。</h1>
+        <p class="lead">学生发布代取需求，骑手接单后取件、送达，下单人签收并评价。订单状态、钱包流水、信用记录和操作存证都落在数据库里，出现争议时可以按时间线核对。</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">MariaDB</span><span class="tag">HTML / CSS / JS</span><span class="tag">Token 鉴权</span><span class="tag">哈希存证</span></div>
+        <div class="stats">
+          <div class="stat"><strong>22</strong><span>个接口</span></div>
+          <div class="stat"><strong>6</strong><span>张数据表</span></div>
+          <div class="stat"><strong>111</strong><span>条自测通过</span></div>
+          <div class="stat"><strong>5</strong><span>步订单状态</span></div>
+        </div>
+      </div>
+      <div class="shot">
+        <img src="images/student-dashboard.png" alt="学生工作台">
+        <div class="caption"><span>学生工作台</span><span>余额、信用、订单记录</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="flow">
+      <div class="section-head"><div><p class="kicker">Main flow</p><h2>一条订单从发布到签收</h2></div><p>学生、骑手、管理员在同一个工作台里协作</p></div>
+      <div class="flow">
+        <div class="step"><b>01 / 发布</b><strong>填写代取需求</strong><span>物品、取件点、送达点、跑腿费、超时时间</span></div>
+        <div class="step"><b>02 / 接单</b><strong>骑手确认顺路</strong><span>只能接非本人发布的待接单订单</span></div>
+        <div class="step"><b>03 / 取件</b><strong>确认拿到包裹</strong><span>接单骑手推进到配送中</span></div>
+        <div class="step"><b>04 / 送达</b><strong>送到指定地点</strong><span>骑手标记已送达</span></div>
+        <div class="step"><b>05 / 签收</b><strong>结算并评价</strong><span>扣跑腿费，生成双方流水，写存证</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="screens">
+      <div class="section-head"><div><p class="kicker">Screens</p><h2>实际页面</h2></div><p>截图来自本地启动后的真实数据</p></div>
+      <div class="gallery">
+        <figure><img src="images/login.png" alt="登录页"><figcaption>登录页 · 三个角色演示入口</figcaption></figure>
+        <figure><img src="images/publish.png" alt="发布代取"><figcaption>发布代取 · 学生填写取件与送达信息</figcaption></figure>
+        <figure><img src="images/order-detail.png" alt="订单详情"><figcaption>订单详情 · 状态进度、时间线与存证校验</figcaption></figure>
+        <figure><img src="images/courier-dashboard.png" alt="骑手工作台"><figcaption>骑手工作台 · 接单大厅与我的配送</figcaption></figure>
+        <figure><img src="images/wallet.png" alt="钱包"><figcaption>钱包 · 充值、余额与收支流水</figcaption></figure>
+        <figure><img src="images/admin-dashboard.png" alt="管理员工作台"><figcaption>管理员 · 订单状态分布与存证记录</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><div><p class="kicker">Implementation</p><h2>系统怎么实现</h2></div><p>浏览器工作台、接口、数据库和存证链</p></div>
+      <div class="cards">
+        <div class="card"><h3>一个进程同时托管页面和接口</h3><p><code>ThreadingHTTPServer</code> 直接返回 <code>web/</code> 下的页面、样式和脚本；<code>/api/...</code> 进入业务路由。前端不需要 Node.js，也不需要单独部署。</p></div>
+        <div class="card"><h3>订单状态与权限分开判断</h3><p>学生只能取消、签收、评价自己的订单；骑手只能接单、取件、送达自己接的订单；管理员查看全量订单和统计。</p></div>
+        <div class="card"><h3>金额、流水、存证一起提交</h3><p>签收时更新订单、扣下单人余额、给骑手入账、写双方流水，再追加一条哈希存证；任一步失败就回滚。</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="run">
+      <div class="section-head"><div><p class="kicker">Run locally</p><h2>本地运行</h2></div><p>需要 Python 3.11+ 和 MariaDB 10.6 / MySQL 8</p></div>
+      <div class="run">
+        <pre><span class="c"># 1. 安装依赖</span>
+pip install -r requirements.txt
+
+<span class="c"># 2. 初始化表并启动</span>
+python app/server.py --port 9300 --reset
+
+<span class="c"># 3. 浏览器打开</span>
+http://127.0.0.1:9300/</pre>
+        <div class="note">
+          <h3>种子账号</h3>
+          <p>管理员：13800000000 / Admin@123<br>学生：13800000001 / Stu@123<br>骑手：13800000002 / Run@123</p>
+          <p style="margin-top:10px">学生账号预置 300 元余额，骑手预置 50 元，登录页提供三个角色的演示入口。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <span>校园快递代取平台 · 独立开发的校园服务系统</span>
+    <span><a href="https://github.com/zhongjiawei-dev/campus-express-service">查看 GitHub 仓库</a>　·　Python · MariaDB · HTML/CSS/JS</span>
+  </footer>
+</body>
+</html>
