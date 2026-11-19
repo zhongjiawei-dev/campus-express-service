@@ -1,13 +1,32 @@
-# 校园快递代取平台 · 后端服务
+# 校园快递代取平台
 
-![campus-express-api-ci](https://github.com/zhongjiawei-dev/campus-express-service/actions/workflows/ci.yml/badge.svg)
+![campus-express-ci](https://github.com/zhongjiawei-dev/campus-express-service/actions/workflows/ci.yml/badge.svg)
 
-校园快递代取平台是我独立开发的一个后端项目：学生发布代取需求，骑手接单、取件、送达，学生签收并评价；订单每次状态变化都会写入一条哈希存证，出现争议时可以按时间线核对。
+校园快递代取平台是我独立开发的一套校园服务系统。学生在浏览器里发布代取需求，骑手接单后取件、送达，学生确认签收；订单状态、钱包流水、信用记录和操作存证都保存在 MariaDB 里。
 
-我把重点放在后端本身：接口设计、订单状态机、Token 鉴权、钱包与流水、数据库事务和存证链。
+整个系统由浏览器工作台、HTTP 接口、数据库和哈希存证链组成，启动一个 Python 进程即可使用，不需要再单独起前端服务。
+
+## 界面
+
+| 登录页 | 学生工作台 |
+| --- | --- |
+| ![登录页](docs/images/login.png) | ![学生工作台](docs/images/student-dashboard.png) |
+
+| 订单详情与存证时间线 | 骑手接单大厅 |
+| --- | --- |
+| ![订单详情](docs/images/order-detail.png) | ![骑手工作台](docs/images/courier-dashboard.png) |
+
+| 发布代取 | 钱包流水 |
+| --- | --- |
+| ![发布订单](docs/images/publish.png) | ![钱包](docs/images/wallet.png) |
+
+管理员可以在同一个工作台查看订单总量、已支付订单和存证记录数：
+
+![管理员数据概览](docs/images/admin-dashboard.png)
 
 ## 功能
 
+- 浏览器工作台：登录、注册、学生发单、骑手接单、配送推进、签收、评价、钱包充值、信用查询、管理员统计
 - 账号：手机号注册、登录、当前用户、资料查看，角色分为学生、骑手、管理员
 - 订单：发布、列表、详情、接单、取件、送达、签收、取消、评价
 - 钱包：余额、充值、支付、收支流水
@@ -18,33 +37,36 @@
 ## 技术栈
 
 - Python 3.11+
-- HTTP 服务：标准库 `ThreadingHTTPServer`，没有引入 Web 框架
+- HTTP 服务：标准库 `ThreadingHTTPServer`，同时托管 API 和前端静态文件
+- 前端：原生 HTML / CSS / JavaScript，没有引入前端框架和 CDN
 - 数据访问：PyMySQL，手写 SQL
 - 数据库：MariaDB 10.6 / MySQL 8
 - 接口调试：Postman
-- 持续集成：GitHub Actions，每次 push 启动 MariaDB 并跑接口自测
+- 持续集成：GitHub Actions，每次 push 启动 MariaDB，跑接口自测和页面静态资源检查
 
-为什么不用框架：这个项目想把 HTTP 路由、参数校验、事务和鉴权本身讲清楚，所以服务端只依赖标准库；代价是路由和错误处理要自己写，换来的是部署简单，不装框架也能跑。
+为什么不用框架：这个项目想把 HTTP 路由、静态资源、参数校验、事务和鉴权本身讲清楚，所以服务端只依赖标准库；代价是路由和错误处理要自己写，换来的是部署简单，一个进程就能把页面和接口一起跑起来。
 
 ## 系统结构
 
 ```mermaid
 flowchart LR
-    C[客户端 / Postman] --> H[ThreadingHTTPServer]
-    H --> R[路由与参数解析]
+    B[浏览器工作台] --> S[ThreadingHTTPServer]
+    S --> W[静态页面 /app.js /style.css]
+    S --> R[路由与参数解析]
     R --> A[业务层 Api]
     A --> DB[(MariaDB)]
     A --> CH[哈希存证]
-    A --> W[钱包与流水]
+    A --> WAL[钱包与流水]
 ```
 
 请求处理链路：
 
-1. `Handler._dispatch` 按方法和路径匹配接口；
-2. `Api` 负责参数校验、角色判断、订单状态流转；
-3. 每个请求创建一个数据库连接，写操作执行完统一 `commit`，异常时回滚并返回错误码；
-4. 订单节点更新后调用 `append_chain`，把事件、标题、状态和前一哈希写进 `chain_records`；
-5. 响应统一为 `{"code": 0, "message": "ok", "data": ...}`，出错时返回业务错误码和 HTTP 状态码。
+1. `GET /`、`/style.css`、`/app.js` 由 `Handler.do_GET` 直接返回 `web/` 下的静态文件；
+2. `/api/...` 请求进入 `Handler._dispatch`，按方法和路径匹配接口；
+3. `Api` 负责参数校验、角色判断、订单状态流转；
+4. 每个请求创建一个数据库连接，写操作执行完统一 `commit`，异常时回滚并返回错误码；
+5. 订单节点更新后调用 `append_chain`，把事件、标题、状态和前一哈希写进 `chain_records`；
+6. 响应统一为 `{"code": 0, "message": "ok", "data": ...}`，出错时返回业务错误码和 HTTP 状态码。
 
 ## 订单状态
 
@@ -112,6 +134,14 @@ stateDiagram-v2
 | 管理 | `GET /api/admin/orders` | 管理员查订单 |
 | 管理 | `GET /api/admin/stats` | 管理员统计 |
 
+页面路由：
+
+| 路径 | 说明 |
+| --- | --- |
+| `/` | 登录页 / 工作台入口 |
+| `/style.css` | 页面样式 |
+| `/app.js` | 前端交互与接口调用 |
+
 请求示例：
 
 ```bash
@@ -147,7 +177,13 @@ pip install -r requirements.txt
 python app/server.py --port 9300 --reset
 ```
 
-`--reset` 会重建表并写入种子账号。启动后检查：
+`--reset` 会重建表并写入种子账号。启动后打开：
+
+```
+http://127.0.0.1:9300/
+```
+
+健康检查：
 
 ```bash
 curl http://127.0.0.1:9300/api/health
@@ -164,14 +200,20 @@ curl http://127.0.0.1:9300/api/health
 | 骑手 A | 13800000002 | Run@123 | 50.00 |
 | 骑手 B | 13800000003 | Run@456 | 50.00 |
 
+登录页提供三个角色的演示入口，点一下即可进入对应工作台。
+
 ## 目录
 
 ```
-app/server.py              服务入口：路由、业务、数据库、存证
-tests/                     接口自测脚本
+app/server.py              服务入口：静态页面、路由、业务、数据库、存证
+web/index.html             登录页与工作台结构
+web/style.css              页面样式
+web/app.js                 前端交互与接口调用
+tests/                     接口自测与页面静态资源检查
 data/order_cases.yaml      下单参数的数据
 postman/                   Postman 集合，27 个请求
 docs/                      项目说明、系统设计、数据库、接口、部署
+docs/images/               页面截图
 requirements.txt           运行依赖
 requirements-dev.txt       自测依赖
 ```
@@ -183,6 +225,7 @@ requirements-dev.txt       自测依赖
 - **角色控制**：学生只能发布、取消、签收、评价自己的订单；骑手只能接单、取件、送达自己接的订单；管理员可以查全量订单和统计。
 - **写操作一个事务**：状态更新、钱包扣款、流水、信用分和存证在同一个连接里提交，异常时回滚。
 - **哈希链**：`sha256(prev_hash|order_id|event|title|status)`，每条记录保存前一记录的哈希；校验接口从第一条开始重算，发现不一致就返回断点。
+- **前端不依赖构建工具**：`web/` 下是原始的 HTML、CSS 和 JavaScript，由 Python 服务直接托管，改完刷新页面即可生效。
 
 ## 当前版本边界
 
@@ -192,15 +235,16 @@ requirements-dev.txt       自测依赖
 - 接单入口还没有拦截已经超时的订单，超时只在订单视图里计算展示；
 - 签收和评价接口还没有做幂等控制，重复调用会重复扣款或重复加信用分；
 - 密码目前是明文存储，生产环境需要改成哈希；
+- 真实支付、短信通知、地图轨迹没有接入，充值是演示逻辑；
 - 服务是单进程 `ThreadingHTTPServer`，生产部署需要换 WSGI/ASGI 服务和反向代理。
 
 ## 自测
 
-仓库带一套接口自测，覆盖登录、下单、接单、取件、送达、签收、评价、钱包、存证和数据库核对：
+仓库带一套接口自测和页面静态资源检查，覆盖登录、下单、接单、取件、送达、签收、评价、钱包、存证、数据库核对，以及首页、CSS、JS 的返回：
 
 ```bash
 pip install -r requirements-dev.txt
 pytest
 ```
 
-最近一次本地执行：`108 passed, 5 xfailed in 23.09s`。5 条 `xfail` 对应上面“当前版本边界”里的规则，不是接口跑不通。CI 里会启动 MariaDB 10.6 跑同一套用例。
+最近一次本地执行：`111 passed, 5 xfailed in 22.85s`（新增 3 条页面静态资源用例）。5 条 `xfail` 对应上面“当前版本边界”里的规则，不是接口跑不通。CI 里会启动 MariaDB 10.6 跑同一套用例。

@@ -35,6 +35,14 @@ DB_CONFIG = dict(
 
 TOKEN_TTL = 2 * 3600
 
+WEB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web")
+STATIC_FILES = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/index.html": ("index.html", "text/html; charset=utf-8"),
+    "/style.css": ("style.css", "text/css; charset=utf-8"),
+    "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+}
+
 SCHEMA = [
     """CREATE TABLE IF NOT EXISTS users (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -699,6 +707,21 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(raw)
 
+    def _send_file(self, filename, content_type):
+        path = os.path.join(WEB_DIR, filename)
+        try:
+            with open(path, "rb") as fp:
+                raw = fp.read()
+        except OSError:
+            self._send(404, {"code": 40401, "message": "页面文件不存在", "data": None})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(raw)
+
     def _dispatch(self, method):
         conn = connect()
         api = Api(conn)
@@ -763,6 +786,16 @@ class Handler(BaseHTTPRequestHandler):
             conn.close()
 
     def do_GET(self):
+        parsed = urlparse(self.path)
+        if parsed.path == "/favicon.ico":
+            self.send_response(204)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if parsed.path in STATIC_FILES:
+            filename, content_type = STATIC_FILES[parsed.path]
+            self._send_file(filename, content_type)
+            return
         try:
             status, payload = self._dispatch("GET")
         except Exception:
